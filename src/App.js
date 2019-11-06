@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Query, ApolloConsumer, Mutation } from "react-apollo";
 import { gql } from "apollo-boost";
+import { useQuery, useMutation } from "@apollo/react-hooks";
 
 import Person from "./Person";
 import PersonForm from "./PersonForm";
-import PhoneForm from './PhoneForm'
+import PhoneForm from "./PhoneForm";
 
 const ALL_PERSONS = gql`
   {
@@ -36,62 +36,43 @@ const CREATE_PERSON = gql`
 `;
 
 const EDIT_NUMBER = gql`
-mutation editNumber($name: String!, $phone: String!){
+  mutation editNumber($name: String!, $phone: String!) {
     editNumber(name: $name, phone: $phone) {
-        name
-        phone
-       address {
-           street
-           city
-       }
-       id
+      name
+      phone
+      address {
+        street
+        city
+      }
+      id
     }
-}
-`
+  }
+`;
 
 const App = () => {
-    const [errorMessage, setErrorMessage] = useState(null)
-    const handleError = (error) => {
-        setErrorMessage(error.graphQLErrors[0].message)
-        setTimeout(() => {
-            setErrorMessage(null)
-        }, 10000)
-    }
+  const persons = useQuery(ALL_PERSONS);
+  const [errorMessage, setErrorMessage] = useState(null);
+  const handleError = error => {
+    setErrorMessage(error.graphQLErrors[0].message);
+    setTimeout(() => {
+      setErrorMessage(null);
+    }, 10000);
+  };
+
+  const [addPerson] = useMutation(CREATE_PERSON, {
+    onError: handleError,
+    refetchQueries: [{ query: ALL_PERSONS }]
+  });
+  const [editNumber] = useMutation(EDIT_NUMBER);
+
   return (
     <div>
-        {errorMessage &&
-        <div style={{color: 'red'}}>
-            {errorMessage}
-        </div>
-        }
-      <ApolloConsumer>
-        {client => (
-          <Query 
-            query={ALL_PERSONS} 
-            // pollInterval={2000}
-          >
-            {result => <Person result={result} client={client} />}
-          </Query>
-        )}
-      </ApolloConsumer>
+      {errorMessage && <div style={{ color: "red" }}>{errorMessage}</div>}
+      <Person result={persons} />
       <h2>create new</h2>
-      <Mutation
-        mutation={CREATE_PERSON}
-        refetchQueries={[{ query: ALL_PERSONS }]}
-        onError={handleError}
-      >
-        {addPerson => <PersonForm addPerson={addPerson} />}
-      </Mutation>
+      <PersonForm addPerson={addPerson} />
       <h2>change number</h2>
-      <Mutation
-        mutation={EDIT_NUMBER}
-      >
-        {(editNumber) => 
-            <PhoneForm
-                editNumber={editNumber}
-            />
-        }
-      </Mutation>
+      <PhoneForm editNumber={editNumber} />
     </div>
   );
 };
