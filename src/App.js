@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Query, ApolloConsumer, Mutation } from "react-apollo";
 import { gql } from "apollo-boost";
 
@@ -35,8 +35,20 @@ const CREATE_PERSON = gql`
 `;
 
 const App = () => {
+    const [errorMessage, setErrorMessage] = useState(null)
+    const handleError = (error) => {
+        setErrorMessage(error.graphQLErrors[0].message)
+        setTimeout(() => {
+            setErrorMessage(null)
+        }, 10000)
+    }
   return (
     <div>
+        {errorMessage &&
+        <div style={{color: 'red'}}>
+            {errorMessage}
+        </div>
+        }
       <ApolloConsumer>
         {client => (
           <Query 
@@ -51,6 +63,7 @@ const App = () => {
       <Mutation
         mutation={CREATE_PERSON}
         refetchQueries={[{ query: ALL_PERSONS }]}
+        onError={handleError}
       >
         {addPerson => <PersonForm addPerson={addPerson} />}
       </Mutation>
