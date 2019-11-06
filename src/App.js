@@ -4,6 +4,7 @@ import { gql } from "apollo-boost";
 
 import Person from "./Person";
 import PersonForm from "./PersonForm";
+import PhoneForm from './PhoneForm'
 
 const ALL_PERSONS = gql`
   {
@@ -33,6 +34,20 @@ const CREATE_PERSON = gql`
     }
   }
 `;
+
+const EDIT_NUMBER = gql`
+mutation editNumber($name: String!, $phone: String!){
+    editNumber(name: $name, phone: $phone) {
+        name
+        phone
+       address {
+           street
+           city
+       }
+       id
+    }
+}
+`
 
 const App = () => {
     const [errorMessage, setErrorMessage] = useState(null)
@@ -66,6 +81,16 @@ const App = () => {
         onError={handleError}
       >
         {addPerson => <PersonForm addPerson={addPerson} />}
+      </Mutation>
+      <h2>change number</h2>
+      <Mutation
+        mutation={EDIT_NUMBER}
+      >
+        {(editNumber) => 
+            <PhoneForm
+                editNumber={editNumber}
+            />
+        }
       </Mutation>
     </div>
   );
