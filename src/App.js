@@ -1,23 +1,29 @@
-import React from 'react'
-import { Query } from 'react-apollo'
-import { gql } from 'apollo-boost'
+import React from "react";
+import { Query, ApolloConsumer } from "react-apollo";
+import { gql } from "apollo-boost";
 
-import Person from './Person'
+import Person from "./Person";
 
 const ALL_PERSONS = gql`
-{
+  {
     allPersons {
-        name
-        phone
-        id
+      name
+      phone
+      id
     }
-}
-`
+  }
+`;
 
 const App = () => {
-    return <Query query={ALL_PERSONS}>
-            {(result) => <Person result={result}/>}
+  return (
+    <ApolloConsumer>
+      {client => (
+        <Query query={ALL_PERSONS}>
+          {result => <Person result={result} client={client} />}
         </Query>
-}
+      )}
+    </ApolloConsumer>
+  );
+};
 
-export default App
+export default App;
